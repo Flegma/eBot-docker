@@ -1,48 +1,63 @@
-version: '3'
 services:
     ebot-web:
         build:
             context: ./ebot-web
+        restart: always
         environment:
             - EBOT_ADMIN_LOGIN
             - EBOT_ADMIN_PASSWORD
             - EBOT_ADMIN_EMAIL
+            - EBOT_IP
             - MYSQL_ROOT_PASSWORD
+            - MYSQL_USER
+            - MYSQL_PASSWORD
+            - MYSQL_DATABASE
+            - WEBSOCKET_URL
+            - WEBSOCKET_SECRET_KEY
         volumes:
             - "eBotWebVolume:/app/eBot-CSGO-Web"
             - "./ebot-logs:/app/ebot-logs"
             - "./ebot-demos:/app/ebot-demos"
-            - "./etc/eBotWeb/app_user.yml:/app/eBot-CSGO-Web/config/app_user.yml"
-            - "./etc/eBotWeb/databases.yml:/app/eBot-CSGO-Web/config/databases.yml"
+            - "./templates:/app/templates:ro"
         depends_on:
-            - mysqldb
+            mysqldb:
+                condition: service_healthy
     ebot-socket:
         build:
             context: ./ebot-socket
+        restart: always
         environment:
             - MYSQL_USER
             - MYSQL_PASSWORD
             - MYSQL_DATABASE
+            - LOG_ADDRESS_SERVER
+            - WEBSOCKET_SECRET_KEY
+            - COMMAND_STOP_DISABLED
         ports:
             - "12360:12360"
-            - "12361:12361"
         volumes:
             - "./ebot-logs:/app/eBot-CSGO/logs"
             - "./ebot-demos:/app/eBot-CSGO/demos"
-            - "./etc/eBotSocket/config.ini:/app/eBot-CSGO/config/config.ini"
+            - "./templates:/app/templates:ro"
         depends_on:
-            - mysqldb
-            - ebot-web
-            - redis
+            mysqldb:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            ebot-web:
+                condition: service_started
     ebot-logs-receiver:
         build:
             context: ./ebot-logs-receiver
+        restart: always
         ports:
-            - "12345:12345"
+            - "12345:12345/tcp"
+            - "12345:12345/udp"
         volumes:
             - "./etc/eBotLogReceiver/config.json:/app/ebot-project/configs/config.json"
         depends_on:
-            - redis
+            redis:
+                condition: service_healthy
     mysqldb:
         image: biarms/mysql:5.7
         restart: always
@@ -53,11 +68,22 @@ services:
             - MYSQL_PASSWORD
         volumes:
             - "./data/db/mysql:/var/lib/mysql"
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
     redis:
         image: redis:alpine
         restart: always
         volumes:
             - ./data/redis:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
     nginx:
         image: nginx:alpine
         volumes:
@@ -65,7 +91,6 @@ services:
             - "eBotWebVolume:/app/eBot-CSGO-Web"
         ports:
             - "80:80"
-            - "443:443"
         restart: always
         depends_on:
             - ebot-web

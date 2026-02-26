@@ -1,4 +1,7 @@
-.env.bak
-data/
-*.bak
 .env
+.env.bak
+.env-e
+*.bak
+data/
+ebot-logs/
+ebot-demos/
