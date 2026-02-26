@@ -19,8 +19,13 @@ services:
     ebot-socket:
         build:
             context: ./ebot-socket
+        environment:
+            - MYSQL_USER
+            - MYSQL_PASSWORD
+            - MYSQL_DATABASE
         ports:
             - "12360:12360"
+            - "12361:12361"
         volumes:
             - "./ebot-logs:/app/eBot-CSGO/logs"
             - "./ebot-demos:/app/eBot-CSGO/demos"

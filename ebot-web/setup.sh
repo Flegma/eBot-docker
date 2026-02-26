@@ -2,7 +2,7 @@
 set -e
 
 # Check if the .installed file exists
-if [ ! -f .installed ]; then
+if [ ! -f eBot-CSGO-Web/.installed ]; then
 
     git config --global http.sslverify false
 
@@ -34,9 +34,10 @@ if [ ! -f .installed ]; then
 
     rm -rf web/installation
 
-    cd ..
-
     touch .installed
+    chown -R www-data:www-data cache log
+
+    cd ..
 
     echo "Setup complete."
     php-fpm
@@ -45,6 +46,7 @@ else
     cd eBot-CSGO-Web
     rm -rf cache/*
     php symfony cc
+    chown -R www-data:www-data cache log
     echo "Cache cleared."
 
     php-fpm
