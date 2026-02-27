@@ -27,7 +27,7 @@
     ],
     "plugins": [
       {
-        "path": "src/logs-receiver/plugins/logger.ts",
+        "path": "dist/logs-receiver/plugins/logger.js",
         "config": {
           "path": "logs",
           "split": true
