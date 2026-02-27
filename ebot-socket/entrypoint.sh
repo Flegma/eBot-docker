@@ -1,6 +1,19 @@
 #!/bin/bash
 set -e
 
+if [ "$DEV_MODE" = "true" ]; then
+    echo "DEV MODE: Using bind-mounted local code"
+    cd /app/eBot-CSGO
+    if [ ! -d vendor ]; then
+        echo "Installing PHP dependencies..."
+        composer install
+    fi
+    if [ ! -d node_modules ]; then
+        echo "Installing Node dependencies..."
+        npm install
+    fi
+fi
+
 # Generate config from template (every restart)
 echo "Generating config.ini from template..."
 envsubst < /app/templates/config.ini.template > /app/eBot-CSGO/config/config.ini

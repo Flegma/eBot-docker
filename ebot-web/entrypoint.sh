@@ -1,10 +1,17 @@
 #!/bin/bash
 set -e
 
-# Sync code from image to volume (updates code on rebuild, preserves runtime state)
-echo "Syncing web panel code..."
-rsync -a --exclude='.installed' --exclude='/cache/' --exclude='/log/' \
-    /app/eBot-CSGO-Web-src/ /app/eBot-CSGO-Web/
+if [ "$DEV_MODE" = "true" ]; then
+    echo "DEV MODE: Using bind-mounted local code"
+    # Patch Symfony in the mounted code (idempotent)
+    php /app/patch-symfony.php /app/eBot-CSGO-Web
+else
+    # Sync code from image to volume (updates code on rebuild, preserves runtime state)
+    echo "Syncing web panel code..."
+    rsync -a --exclude='.installed' --exclude='/cache/' --exclude='/log/' \
+        /app/eBot-CSGO-Web-src/ /app/eBot-CSGO-Web/
+fi
+
 mkdir -p /app/eBot-CSGO-Web/cache /app/eBot-CSGO-Web/log
 
 cd /app/eBot-CSGO-Web

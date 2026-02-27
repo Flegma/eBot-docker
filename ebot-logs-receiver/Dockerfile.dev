@@ -1,0 +1,5 @@
+FROM node:18
+
+WORKDIR /app/ebot-project
+
+CMD ["sh", "-c", "npm install && npx tsx src/logs-receiver.ts ./configs/config.json"]

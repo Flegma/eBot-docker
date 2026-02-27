@@ -1,0 +1,28 @@
+services:
+    ebot-web:
+        environment:
+            - DEV_MODE=true
+        volumes:
+            - "../eBot-CSGO-Web:/app/eBot-CSGO-Web"
+            - "./ebot-logs:/app/ebot-logs"
+            - "./ebot-demos:/app/ebot-demos"
+            - "./templates:/app/templates:ro"
+    ebot-socket:
+        environment:
+            - DEV_MODE=true
+        volumes:
+            - "../eBot-CSGO:/app/eBot-CSGO"
+            - "./ebot-logs:/app/eBot-CSGO/logs"
+            - "./ebot-demos:/app/eBot-CSGO/demos"
+            - "./templates:/app/templates:ro"
+    ebot-logs-receiver:
+        build:
+            context: ./ebot-logs-receiver
+            dockerfile: Dockerfile.dev
+        volumes:
+            - "../ebot-project:/app/ebot-project"
+            - "./etc/eBotLogReceiver/config.json:/app/ebot-project/configs/config.json"
+    nginx:
+        volumes:
+            - "./etc/nginx/default.conf:/etc/nginx/conf.d/default.conf"
+            - "../eBot-CSGO-Web:/app/eBot-CSGO-Web"
