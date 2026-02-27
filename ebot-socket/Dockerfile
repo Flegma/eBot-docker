@@ -2,7 +2,8 @@ FROM creativeprojects/php-nodejs:7.4
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y gettext-base && apt-get clean
+RUN rm -f /etc/apt/sources.list.d/yarn.list \
+    && apt-get update && apt-get install -y gettext-base && apt-get clean
 
 # Clone bot at build time
 RUN git clone https://github.com/Flegma/eBot-CSGO.git eBot-CSGO

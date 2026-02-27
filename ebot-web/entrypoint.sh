@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Sync code from image to volume (updates code on rebuild, preserves runtime state)
+echo "Syncing web panel code..."
+rsync -a --exclude='.installed' --exclude='/cache/' --exclude='/log/' \
+    /app/eBot-CSGO-Web-src/ /app/eBot-CSGO-Web/
+mkdir -p /app/eBot-CSGO-Web/cache /app/eBot-CSGO-Web/log
+
 cd /app/eBot-CSGO-Web
 
 # Generate config files from templates (every restart)
