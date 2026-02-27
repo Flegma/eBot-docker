@@ -4,13 +4,44 @@
 It is a containerized version of eBot, which is a full managed server-bot written in PHP and nodeJS. eBot features easy match creation and tons of player and matchstats. Once it's setup, using the eBot is simple and fast.
 
 ## How to run it
-You should download the repository content, place it in a folder, and then execute the following commands in the specified order:
-```
+
+### Production mode
+Clones the web panel code from GitHub during the Docker build. Use this for deployments.
+
+```bash
 cp .env.sample .env
-chmod a+x setup.sh configure.sh
-./setup.sh
-docker-compose build
-docker-compose up
+# Edit .env with your configuration
+docker compose build
+docker compose up -d
+```
+
+### Development mode
+Bind-mounts your local repositories into the containers so code changes are reflected immediately without rebuilding.
+
+Requires all repositories to be cloned alongside `eBot-docker`:
+```
+parent/
+  eBot-CSGO/          # Bot core (PHP + Node.js)
+  eBot-CSGO-Web/      # Web panel (Symfony/PHP)
+  ebot-project/       # Logs receiver (TypeScript)
+  eBot-docker/
+```
+
+```bash
+cp .env.sample .env
+# Edit .env with your configuration
+docker compose -f docker-compose.yml -f docker-compose.dev.yml build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+How changes are picked up per service:
+- **eBot-CSGO-Web** (PHP) — instant, just refresh the browser
+- **eBot-CSGO** (PHP) — instant, but requires a container restart for the bot process: `docker restart ebot-docker-ebot-socket-1`
+- **ebot-project** (TypeScript) — requires a container restart: `docker restart ebot-docker-ebot-logs-receiver-1`
+
+To clear the Symfony cache after model/config changes in the web panel:
+```bash
+docker exec ebot-docker-ebot-web-1 bash -c "cd /app/eBot-CSGO-Web && php symfony cc"
 ```
 
 ## What needs to be changed
